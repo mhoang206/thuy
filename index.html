@@ -2,228 +2,832 @@
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Gửi Em Bé Thủy ❤️</title>
-<link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Nunito:wght@300;400;600;700&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>💜 Gửi Em 💜</title>
 <style>
-    /* === CẤU HÌNH CƠ BẢN === */
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-        background-color: #000;
-        color: #fff;
-        font-family: 'Nunito', sans-serif;
-        overflow: hidden; /* Chặn cuộn trang web */
-        height: 100vh;
-        display: flex; justify-content: center; align-items: center;
-    }
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&display=swap');
 
-    /* === BACKGROUND HEART (CANVAS) === */
-    canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; }
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
 
-    /* === CONTAINER CHÍNH === */
-    .container {
-        position: relative; z-index: 10;
-        width: 100%; max-width: 500px;
-        height: 100vh;
-        display: flex; flex-direction: column;
-        justify-content: center; align-items: center;
-        background: rgba(0, 0, 0, 0.4); /* Nền mờ nhẹ để nổi chữ */
-        backdrop-filter: blur(2px);
-    }
+  html, body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: #000;
+    cursor: none;
+  }
 
-    /* === KHUNG ẢNH (SLIDESHOW) === */
-    .photo-frame {
-        width: 250px; height: 320px;
-        border: 2px solid #ff4d6d;
-        border-radius: 15px;
-        padding: 5px;
-        box-shadow: 0 0 20px rgba(255, 77, 109, 0.5);
-        margin-bottom: 20px;
-        position: relative;
-        background: #000;
-        transform: rotate(-3deg);
-        transition: transform 0.5s;
-    }
-    .photo-frame:hover { transform: rotate(0deg) scale(1.05); }
-    
-    .photo-frame img {
-        width: 100%; height: 100%;
-        object-fit: cover; border-radius: 10px;
-        display: none; /* Ẩn hết, JS sẽ hiện từng cái */
-        animation: fadeIn 1s ease;
-    }
-    .photo-frame img.active { display: block; }
+  canvas {
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1;
+  }
 
-    /* === TEXT BOX (QUAN TRỌNG: CHỖ NÀY ĐỂ TEXT DÀI) === */
-    .content-box {
-        width: 90%;
-        height: 40%; /* Chiếm 40% màn hình */
-        background: rgba(20, 20, 20, 0.85);
-        border-radius: 20px;
-        border: 1px solid rgba(255, 77, 109, 0.3);
-        padding: 20px;
-        overflow-y: auto; /* Cho phép cuộn dọc nếu văn bản quá dài */
-        text-align: left;
-        position: relative;
-        box-shadow: 0 -5px 20px rgba(0,0,0,0.5);
-    }
+  .cursor-glow {
+    position: fixed;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 1000;
+    transform: translate(-50%, -50%);
+    background: radial-gradient(circle, rgba(255,105,180,0.6) 0%, rgba(255,105,180,0) 70%);
+    mix-blend-mode: screen;
+    transition: width 0.3s, height 0.3s;
+  }
 
-    /* Tùy chỉnh thanh cuộn cho đẹp */
-    .content-box::-webkit-scrollbar { width: 5px; }
-    .content-box::-webkit-scrollbar-thumb { background: #ff4d6d; border-radius: 10px; }
+  .start-overlay {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: radial-gradient(ellipse at center, rgba(10,0,20,0.95) 0%, rgba(0,0,0,0.99) 100%);
+    transition: opacity 1.5s ease, visibility 1.5s ease;
+  }
 
-    #title {
-        font-family: 'Dancing Script', cursive;
-        font-size: 1.8rem; color: #ff4d6d;
-        margin-bottom: 10px; text-align: center;
-        text-shadow: 0 0 10px rgba(255, 77, 109, 0.8);
-    }
+  .start-overlay.hidden {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+  }
 
-    #typewriter {
-        font-size: 1rem; line-height: 1.6; color: #eee;
-        white-space: pre-wrap; /* Giữ nguyên xuống dòng */
-    }
+  .start-overlay h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.5rem, 5vw, 3rem);
+    color: transparent;
+    background: linear-gradient(135deg, #ff69b4, #da70d6, #ffd700);
+    -webkit-background-clip: text;
+    background-clip: text;
+    margin-bottom: 2rem;
+    text-align: center;
+    animation: shimmer 3s ease-in-out infinite;
+  }
 
-    /* Con trỏ nhấp nháy */
-    .cursor {
-        display: inline-block; width: 2px; height: 1em;
-        background: #ff4d6d; animation: blink 1s infinite;
-    }
+  .start-btn {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(1rem, 3vw, 1.4rem);
+    padding: 15px 50px;
+    border: 1px solid rgba(255,105,180,0.5);
+    background: transparent;
+    color: #ff69b4;
+    border-radius: 50px;
+    cursor: pointer;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    transition: all 0.5s ease;
+    position: relative;
+    overflow: hidden;
+  }
 
-    /* === START SCREEN === */
-    #start-screen {
-        position: fixed; inset: 0; z-index: 100;
-        background: #000;
-        display: flex; flex-direction: column; justify-content: center; align-items: center;
-        transition: opacity 1s;
-    }
-    .btn-start {
-        padding: 15px 40px; border: 2px solid #ff4d6d;
-        color: #ff4d6d; font-size: 1.2rem; background: transparent;
-        border-radius: 50px; cursor: pointer;
-        font-family: 'Nunito', sans-serif; font-weight: bold;
-        box-shadow: 0 0 15px rgba(255, 77, 109, 0.4);
-    }
-    .btn-start:hover { background: #ff4d6d; color: #fff; }
+  .start-btn::before {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%;
+    width: 100%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,105,180,0.2), transparent);
+    transition: left 0.5s ease;
+  }
 
-    /* === MUSIC ICON === */
-    .music-control {
-        position: fixed; top: 20px; right: 20px; z-index: 50;
-        font-size: 24px; cursor: pointer; animation: spin 4s linear infinite;
-        opacity: 0.7;
-    }
+  .start-btn:hover::before {
+    left: 100%;
+  }
 
-    @keyframes blink { 50% { opacity: 0; } }
-    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-    @keyframes spin { 100% { transform: rotate(360deg); } }
+  .start-btn:hover {
+    background: rgba(255,105,180,0.1);
+    border-color: #ff69b4;
+    box-shadow: 0 0 30px rgba(255,105,180,0.3), inset 0 0 30px rgba(255,105,180,0.1);
+    transform: scale(1.05);
+  }
 
+  .message-container {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 2s ease;
+  }
+
+  .message-container.visible {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .message-scroll {
+    max-width: 700px;
+    max-height: 75vh;
+    overflow-y: auto;
+    padding: 40px 35px;
+    margin: 20px;
+    background: radial-gradient(ellipse at center, rgba(15,0,30,0.85) 0%, rgba(5,0,10,0.92) 100%);
+    border: 1px solid rgba(255,105,180,0.15);
+    border-radius: 20px;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    box-shadow: 0 0 60px rgba(138,43,226,0.15), 0 0 120px rgba(255,105,180,0.08), inset 0 0 60px rgba(138,43,226,0.05);
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,105,180,0.3) transparent;
+  }
+
+  .message-scroll::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  .message-scroll::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .message-scroll::-webkit-scrollbar-thumb {
+    background: rgba(255,105,180,0.3);
+    border-radius: 2px;
+  }
+
+  .message-line {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(0.95rem, 2.5vw, 1.15rem);
+    line-height: 1.9;
+    color: rgba(230,210,240,0.9);
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 1.2s ease, transform 1.2s ease;
+    margin-bottom: 1.2em;
+    text-align: justify;
+    letter-spacing: 0.3px;
+  }
+
+  .message-line.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .message-line.highlight {
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-size: clamp(1.1rem, 3vw, 1.4rem);
+    text-align: center;
+    color: transparent;
+    background: linear-gradient(135deg, #ff69b4, #ffd700, #da70d6);
+    -webkit-background-clip: text;
+    background-clip: text;
+    font-weight: 700;
+    margin: 1.5em 0;
+    text-shadow: none;
+  }
+
+  .message-line.ending {
+    font-family: 'Playfair Display', serif;
+    font-weight: 700;
+    font-size: clamp(1rem, 2.8vw, 1.3rem);
+    text-align: center;
+    color: #ff69b4;
+    margin-top: 1.5em;
+    letter-spacing: 1px;
+  }
+
+  .close-msg-btn {
+    display: block;
+    margin: 30px auto 10px;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1rem;
+    padding: 10px 40px;
+    border: 1px solid rgba(255,105,180,0.4);
+    background: transparent;
+    color: rgba(255,105,180,0.8);
+    border-radius: 30px;
+    cursor: pointer;
+    letter-spacing: 2px;
+    transition: all 0.4s ease;
+    opacity: 0;
+  }
+
+  .close-msg-btn.visible {
+    opacity: 1;
+  }
+
+  .close-msg-btn:hover {
+    background: rgba(255,105,180,0.15);
+    box-shadow: 0 0 20px rgba(255,105,180,0.2);
+  }
+
+  .read-btn {
+    position: fixed;
+    bottom: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 30;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(0.9rem, 2.5vw, 1.1rem);
+    padding: 12px 40px;
+    border: 1px solid rgba(255,105,180,0.4);
+    background: rgba(10,0,20,0.6);
+    color: rgba(255,105,180,0.9);
+    border-radius: 30px;
+    cursor: pointer;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    backdrop-filter: blur(10px);
+    transition: all 0.5s ease;
+    opacity: 0;
+    visibility: hidden;
+    animation: pulse-btn 2s ease-in-out infinite;
+  }
+
+  .read-btn.visible {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .read-btn:hover {
+    background: rgba(255,105,180,0.15);
+    border-color: #ff69b4;
+    box-shadow: 0 0 30px rgba(255,105,180,0.25);
+  }
+
+  @keyframes shimmer {
+    0%, 100% { filter: brightness(1); }
+    50% { filter: brightness(1.3); }
+  }
+
+  @keyframes pulse-btn {
+    0%, 100% { box-shadow: 0 0 10px rgba(255,105,180,0.1); }
+    50% { box-shadow: 0 0 25px rgba(255,105,180,0.3); }
+  }
+
+  @keyframes float-star {
+    0%, 100% { opacity: 0.3; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.5); }
+  }
 </style>
 </head>
 <body>
 
-    <!-- MÀN HÌNH CHỜ -->
-    <div id="start-screen">
-        <h1 style="font-family: 'Dancing Script'; color: #ff4d6d; margin-bottom: 20px; font-size: 2.5rem;">Gửi Em Bé Thủy</h1>
-        <button class="btn-start" onclick="startLove()">Nhấn để mở thư 💌</button>
-    </div>
+<audio id="bgMusic" loop preload="auto">
+  <source src="[LINK_NHAC_MP3_CUA_BAN_O_DAY]" type="audio/mpeg">
+</audio>
 
-    <!-- BACKGROUND CANVAS -->
-    <canvas id="pinkboard"></canvas>
+<div class="cursor-glow" id="cursorGlow"></div>
 
-       <!-- MUSIC -->
-    <div class="music-control" onclick="toggleMusic()">💿</div>
-    <audio id="bg-music" loop>
-        <!-- Đã sửa thành file nhạc upload trực tiếp cho ổn định -->
-        <source src="music.mp3" type="audio/mpeg">
-    </audio>
+<div class="start-overlay" id="startOverlay">
+  <h1>✨ Có Đôi Điều Muốn Nói ✨</h1>
+  <button class="start-btn" id="startBtn">Mở Ra Nào</button>
+</div>
 
-    <div class="container">
-        <!-- ẢNH SLIDESHOW (Giữ nguyên 3 ảnh của ông) -->
-        <div class="photo-frame">
-            <img src="https://i.ibb.co/39dR6M7y/22a82464-d5ab-4b16-ac5c-e5f576b28df3.jpg" class="active">
-            <img src="https://i.ibb.co/kVSC53Sy/b72d25f5-8263-4b6d-ae3f-d71c478369d6.jpg">
-            <img src="https://i.ibb.co/jPfK1nmm/5777c032-3742-437e-80d1-6afefcb8232c.jpg">
-        </div>
+<canvas id="canvas"></canvas>
 
-    <div class="container">
-        <!-- ẢNH SLIDESHOW (3 ảnh trong link mày gửi) -->
-        <div class="photo-frame">
-            <img src="https://i.ibb.co/39dR6M7y/22a82464-d5ab-4b16-ac5c-e5f576b28df3.jpg" class="active">
-            <img src="https://i.ibb.co/kVSC53Sy/b72d25f5-8263-4b6d-ae3f-d71c478369d6.jpg">
-            <img src="https://i.ibb.co/jPfK1nmm/5777c032-3742-437e-80d1-6afefcb8232c.jpg">
-        </div>
+<button class="read-btn" id="readBtn">💌 Đọc Thư Anh Viết</button>
 
-        <!-- KHUNG TEXT -->
-        <div class="content-box">
-            <div id="title">Chào bé iu của anh</div>
-            <div id="text-container">
-                <span id="typewriter"></span><span class="cursor"></span>
-            </div>
-        </div>
-    </div>
+<div class="message-container" id="messageContainer">
+  <div class="message-scroll" id="messageScroll">
+    <p class="message-line">Em à, qua 3 ngày tết rồi mọi thứ cũng dần lắng xuống, nhưng lại có đôi điều muốn nói với em, muốn bày tỏ thật lòng với em, nên anh vẫn ngồi đây nghĩ về em.</p>
+
+    <p class="message-line">Trước hết thì, chúc em năm mới thật nhiều sức khoẻ, học hành thuận lợi, làm gì cũng suôn sẻ. Chúc ebe bớt ẩm ương, tụt hứng tất thời lại một chút để anh đỡ khổ, mà thôi đừng bớt, anh quen rồi, bớt đi anh lại nhớ. Và chúc cho mình, qua năm mới này, sẽ không còn phải nhìn nhau qua cái màn hình nữa.</p>
+
+    <p class="message-line">Mà nói thiệt, ngồi nghĩ lại từ cái chiều 25/1 trên Ome TV đến giờ, gần 1 tháng rồi, anh vẫn không tin nổi. Hôm đó anh lướt qua bao nhiêu người, chẳng muốn dừng lại với ai. Rồi gặp em. Nói chuyện một lúc thôi mà anh đã thấy con bé này nó khác. Nên xin Facebook. Lúc đó cũng chẳng nghĩ gì xa, ai ngờ giờ nằm đây nhớ em muốn điên.</p>
+
+    <p class="message-line">Gần 1 tháng, cũng không quá dài để hiểu được 1 người nhưng anh không biết sao lại có cảm xúc như thân thương quen nhau từ lâu lắm rồi, nói chuyện với nhau cũng chả thấy cạn năng lượng gì, rất thích nói chuyện với em, nên là chỉ cần nhêu đó thời gian thì anh cũng đã hiểu tính cách của em, mọi luồng suy nghĩ của em, hiểu em là người như thế nào. Em chả khó tính như em nói, em chỉ bị họ trêu đùa, bị tổn thương quá nhiều nên phải cẩn thận hơn. Anh hiểu, anh không trách, anh cũng chả mệt mỏi gì khi được tiếp cận đến em. Anh chỉ muốn em biết là anh nhìn thấy hết. Thấy cái sự mạnh mẽ ở bên ngoài và thấy cả phần mềm mỏng bên trong mà em cố giấu.</p>
+
+    <p class="message-line highlight">Em sợ bị lừa, anh biết. Em từng bị phản bội, anh biết. Em hay tự nhủ "không ai chịu được tính mình", anh cũng biết.</p>
+
+    <p class="message-line">Nhưng mà em à, cái "biết" của anh nó khác mấy thằng trước. Họ biết rồi họ đi. Còn anh biết rồi anh ở lại. Vì anh thấy đằng sau cái tính đó là một người con gái rất xứng đáng được yêu thương đàng hoàng.</p>
+
+    <p class="message-line">Qua 1 ít thời gian ấy, gần 1 tháng, anh thay đổi nhiều lắm. Từ một thằng hay bắt bài người khác, giờ thành thằng nằm cười một mình vì nhớ em. Từ thằng chẳng bao giờ chịu thua ai, giờ tự nguyện làm chó cho em sai. Nghe nó ngu, nhưng mà thiệt. Vì với em anh không cần gồng. Anh cứ là anh, dù nó có hơi hâm, hơi biến thái, hơi lỳ.</p>
+
+    <p class="message-line">Và những cái hành động nhỏ nhoi của anh, anh cũng không biết là mình làm đúng chưa, tại anh cũng không quá rành về mọi thứ và cả cảm xúc của 1 người khác, nhưng dù xa anh vẫn sẽ tìm cách để gần em, em gửi anh thứ gì hay nói thứ gì anh đều xem đều đọc lại đều đặn, ví dụ như video em gửi anh biết em ngại nhưng em vẫn gửi cho anh thì anh quý cái sự chân thành này lắm.</p>
+
+    <p class="message-line">Em hay hỏi "sau này chán thì sao". Anh không giỏi hứa hẹn. Mấy thằng trước cũng hứa rồi chạy. Anh chỉ biết làm. Gần 1 tháng nay nhắn mỗi ngày không sót. Chịu mấy trận em xù lông mà không cáu. Tính kế hoạch tháng 3 ra HN. Đó là cách anh trả lời. Không bằng mồm, bằng việc anh làm. Dù có gặp được em ít đi chăng nữa thì khi nào anh sắp xếp được thời gian là anh sẽ gặp em liền.</p>
+
+    <p class="message-line">Năm mới rồi, anh chỉ ước một thứ thôi: Tháng 3 gặp em. Đi tàu 24 tiếng từ Phú Yên ra. Thi xong dành hết cho em. Đi chợ, nấu cơm, dắt đi xem phim, chở đi lượn. Bình thường vậy thôi. Rồi lúc đó anh sẽ nhìn mặt em mà nói hết mấy thứ qua tin nhắn chưa nói được.</p>
+
+    <p class="message-line highlight">Anh không tỏ tình qua đây. Vì anh muốn lúc anh nói câu đó, em phải thấy mắt anh. Để em biết anh nói thiệt.</p>
+
+    <p class="message-line">Nên là em à, năm mới rồi, bỏ mấy cái suy nghĩ "không ai chịu được" đi. Có anh đây. Anh chịu được. Em cứ khó, anh ở lại. Em cứ dở hơi, anh cười rồi thương.</p>
+
+    <p class="message-line ending">Anh thương em. Thương thiệt.</p>
+    <p class="message-line ending">Năm mới giữ mình cho anh.</p>
+    <p class="message-line ending" style="font-size: clamp(1.2rem,3.5vw,1.6rem); margin-top: 0.8em;">Tháng 3 anh tới. 💜</p>
+
+    <button class="close-msg-btn" id="closeMsgBtn">Đóng lại</button>
+  </div>
+</div>
 
 <script>
-    /* === 1. NỘI DUNG LỜI CHÚC (SỬA Ở ĐÂY THOẢI MÁI, KHÔNG GIỚI HẠN) === */
-    const myLoveLetter = `Em be à, mùng 1 tết rồi, anh chúc em luôn khoẻ, luôn vui, mọi thứ đều suôn sẻ nha. Cảm ơn em vì khoảng thời gian qua luôn ở bên cạnh, luôn hiểu anh. Anh trân trọng em lắm, anh sẽ cố gắng thật nhiều vì mình.
+(function() {
+  'use strict';
 
-Biết là thời gian tới sẽ khó khăn, khoảng cách sẽ xa hơn, nhưng anh hứa là sẽ luôn cố gắng. Anh không giỏi nói mấy lời hoa mỹ, nhưng tình cảm anh dành cho em là thật. 
+  // ─── CANVAS SETUP ───
+  const canvas = document.getElementById('canvas');
+  const ctx = canvas.getContext('2d');
+  let W, H, centerX, centerY, scale;
+  const DPR = Math.min(window.devicePixelRatio || 1, 2);
 
-Anh muốn cùng em đi qua nhiều mùa Tết nữa, không chỉ là Tết này. 
-Dù có chuyện gì xảy ra, hãy nhớ là luôn có anh ở đây, sẵn sàng nghe em kể lể, sẵn sàng làm thùng rác cho em xả stress.
+  function resize() {
+    W = window.innerWidth;
+    H = window.innerHeight;
+    canvas.width = W * DPR;
+    canvas.height = H * DPR;
+    canvas.style.width = W + 'px';
+    canvas.style.height = H + 'px';
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    centerX = W / 2;
+    centerY = H / 2;
+    scale = Math.min(W, H) / 600;
+  }
+  resize();
+  window.addEventListener('resize', resize);
 
-Yêu em nhiều lắm, em bé của anh! ❤️
-(Anh để chỗ này dài thoả thích luôn nè, em đọc mỏi mắt thì thôi :D)`;
+  // ─── CURSOR ───
+  const cursorGlow = document.getElementById('cursorGlow');
+  let mouseX = -1000, mouseY = -1000;
+  let isTouch = false;
 
-    /* === 2. LOGIC GÕ CHỮ (TYPEWRITER) === */
-    let i = 0;
-    const speed = 50; // Tốc độ gõ (ms)
-    const typeTarget = document.getElementById("typewriter");
-    const contentBox = document.querySelector(".content-box");
+  document.addEventListener('mousemove', e => {
+    if (isTouch) return;
+    mouseX = e.clientX;
+    mouseY = e.clientY;
+    cursorGlow.style.left = mouseX + 'px';
+    cursorGlow.style.top = mouseY + 'px';
+    cursorGlow.style.display = 'block';
+  });
 
-    function typeWriter() {
-        if (i < myLoveLetter.length) {
-            typeTarget.innerHTML += myLoveLetter.charAt(i);
-            i++;
-            // Tự động cuộn xuống khi chữ chạy
-            contentBox.scrollTop = contentBox.scrollHeight;
-            setTimeout(typeWriter, speed);
-        }
+  document.addEventListener('touchmove', e => {
+    isTouch = true;
+    const t = e.touches[0];
+    mouseX = t.clientX;
+    mouseY = t.clientY;
+    cursorGlow.style.display = 'none';
+  }, { passive: true });
+
+  document.addEventListener('touchend', () => {
+    setTimeout(() => { mouseX = -1000; mouseY = -1000; }, 2000);
+  });
+
+  // ─── MUSIC ───
+  const bgMusic = document.getElementById('bgMusic');
+  let musicStarted = false;
+  function startMusic() {
+    if (musicStarted) return;
+    musicStarted = true;
+    bgMusic.volume = 0.5;
+    bgMusic.play().catch(() => {});
+  }
+
+  // ─── HEART SHAPE (parametric) ───
+  function heartX(t) {
+    return 16 * Math.pow(Math.sin(t), 3);
+  }
+  function heartY(t) {
+    return -(13 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t));
+  }
+
+  // ─── INFINITY SHAPE ───
+  function infinityX(t) {
+    return 26 * Math.cos(t) / (1 + Math.sin(t) * Math.sin(t));
+  }
+  function infinityY(t) {
+    return 18 * Math.sin(t) * Math.cos(t) / (1 + Math.sin(t) * Math.sin(t));
+  }
+
+  // ─── COLORS ───
+  function getColor(i, total) {
+    const ratio = i / total;
+    const time = performance.now() * 0.001;
+    const shift = Math.sin(time * 0.5 + ratio * Math.PI * 2);
+
+    let r, g, b;
+    if (ratio < 0.33) {
+      // Neon Pink
+      const t = ratio / 0.33;
+      r = 255;
+      g = 50 + t * 50;
+      b = 150 + t * 80 + shift * 30;
+    } else if (ratio < 0.66) {
+      // Deep Purple
+      const t = (ratio - 0.33) / 0.33;
+      r = 180 - t * 40 + shift * 20;
+      g = 50 + shift * 30;
+      b = 220 + t * 35;
+    } else {
+      // Gold Dust
+      const t = (ratio - 0.66) / 0.34;
+      r = 255;
+      g = 180 + t * 60 + shift * 20;
+      b = 50 + t * 30;
     }
 
-    /* === 3. LOGIC SLIDESHOW ẢNH === */
-    let imgIndex = 0;
-    const images = document.querySelectorAll(".photo-frame img");
-    
-    function changeImage() {
-        images[imgIndex].classList.remove("active");
-        imgIndex = (imgIndex + 1) % images.length;
-        images[imgIndex].classList.add("active");
-    }
-    setInterval(changeImage, 3000); // Đổi ảnh mỗi 3 giây
+    return { r: Math.min(255, Math.max(0, r)), g: Math.min(255, Math.max(0, g)), b: Math.min(255, Math.max(0, b)) };
+  }
 
-    /* === 4. BẮT ĐẦU === */
-    function startLove() {
-        document.getElementById("start-screen").style.opacity = 0;
-        setTimeout(() => {
-            document.getElementById("start-screen").style.display = "none";
-            document.getElementById("bg-music").play(); // Phát nhạc
-            typeWriter(); // Bắt đầu gõ chữ
-        }, 1000);
+  // ─── PARTICLES ───
+  const PARTICLE_COUNT = Math.min(8000, Math.max(3000, Math.floor(W * H / 200)));
+  const particles = [];
+  let animationStarted = false;
+  let startTime = 0;
+  let shapeMode = 0; // 0 = heart, cycles between heart and infinity blend
+
+  class Particle {
+    constructor(i) {
+      this.i = i;
+      this.reset();
     }
 
-    function toggleMusic() {
-        const audio = document.getElementById("bg-music");
-        if(audio.paused) audio.play();
-        else audio.pause();
+    reset() {
+      // Random starting position
+      this.x = Math.random() * W;
+      this.y = Math.random() * H;
+      this.vx = (Math.random() - 0.5) * 4;
+      this.vy = (Math.random() - 0.5) * 4;
+
+      // Target on heart shape
+      const t = (this.i / PARTICLE_COUNT) * Math.PI * 2;
+      const scatter = 0.85 + Math.random() * 0.3;
+      this.heartTX = centerX + heartX(t) * 10 * scale * scatter;
+      this.heartTY = centerY + heartY(t) * 10 * scale * scatter;
+
+      // Target on infinity shape
+      const t2 = (this.i / PARTICLE_COUNT) * Math.PI * 2;
+      this.infTX = centerX + infinityX(t2) * 8 * scale * scatter;
+      this.infTY = centerY + infinityY(t2) * 8 * scale * scatter;
+
+      // Current target
+      this.tx = this.heartTX;
+      this.ty = this.heartTY;
+
+      this.size = 0.5 + Math.random() * 1.8;
+      this.baseSize = this.size;
+      this.life = Math.random();
+      this.speed = 0.01 + Math.random() * 0.03;
+
+      const c = getColor(this.i, PARTICLE_COUNT);
+      this.r = c.r;
+      this.g = c.g;
+      this.b = c.b;
+
+      this.phase = Math.random() * Math.PI * 2;
+      this.orbitRadius = Math.random() * 3;
+      this.gathered = false;
     }
 
-    /* === 5. HIỆU ỨNG HEARTBEAT CANVAS (GIỐNG LINK MẪU NHƯNG MƯỢT HƠN) === */
-    var settings = { particles: { length: 500, duration: 2, velocity: 100, effect: -0.75, size: 30, }, };
-    (function(){var b=0;var c=["ms","moz","webkit","o"];for(var a=0;a<c.length&&!window.requestAnimationFrame;++a){window.requestAnimationFrame=window[c[a]+"RequestAnimationFrame"];window.cancelAnimationFrame=window[c[a]+"CancelAnimationFrame"]||window[c[a]+"CancelRequestAnimationFrame"]}if(!window.requestAnimationFrame){window.requestAnimationFrame=function(h,e){var d=new Date().getTime();var f=Math.max(0,16-(d-b));var g=window.setTimeout(function(){h(d+f)},f);b=d+f;return g}}if(!window.cancelAnimationFrame){window.cancelAnimationFrame=function(d){clearTimeout(d)}}}());
-    var Point=function(c,b){this.x=c||0;this.y=b||0};Point.prototype.clone=function(){return new Point(this.x,this.y)};Point.prototype.length=function(a){if(typeof a=="undefined"){return Math.sqrt(this.x*this.x+this.y*this.y)}this.normalize();this.x*=a;this.y*=a;return this};Point.prototype.normalize=function(){var a=this.length();this.x/=a;this.y/=a;return this};
-    var Particle=function(){this.position=new Point();this.velocity=new Point();this.acceleration=new Point();this.age=0};Particle.prototype.initialize=function(b,a,c){this.position.x=a;this.position.y=c;this.velocity.x=b.x;this.velocity.y=b.y;this.acceleration.x=b.x*-0.1;this.acceleration.y=b.y*-0.1;this.age=0};Particle.prototype.update=function(b){this.position.x+=this.velocity.x*b;this.position.y+=this.velocity.y*b;this.velocity.x+=this.acceleration.x*b;this.velocity.y+=this.acceleration.y*b;this.age+=b};Particle.prototype.draw=function(c,b){function a(g){return 16*Math.pow(Math.sin(g),3)}function d(g){return-(13*Math.cos(g)-5*Math.cos(2*g)-2*Math.cos(3*g)-Math.cos(4*g))}b.beginPath();var f=this.position.x,e=this.position.y;b.fillStyle="#ea80b0";b.arc(f,e,settings.particles.size,0,Math.PI*2,true);b.fill()};
-    var ParticlePool=function(a){var c,b=0;this.particles=[];for(c=0;c<a;c++){this.particles.push(new Particle())}this.add=function(f,e,d){this.particles[b].initialize(f,e,d);b=(b+1)%this.particles.length}};
-    (function(p){var b,i,k,h,n,o;var a=new ParticlePool(settings.particles.length);var m=settings.particles.duration;var e;function g(q){var l=new Date().getTime()/1000;var s=l-(e||l);e=l;k.clearRect(0,0,b.width,b.height);var u=function(v){return 16*Math.pow(Math.sin(v),3)};var r=function(v){return-(13*Math.cos(v)-5*Math.cos(2*v)-2*Math.cos(3*v)-Math.cos(4*v))};var t=(Math.PI/180)*(new Date().getTime()/20)%360;var w=new Point(u(t)*130+b.width/2,r(t)*130+b.height/2);for(var x=0;x<settings.particles.length;x++){var z=a.particles[x];if(z.age<m){z.update(s);if(z.age<0){continue}k.globalAlpha=1-(z.age/m);k.beginPath();k.fillStyle="#ff4d6d";k.arc(z.position.x,z.position.y,1.5,0,Math.PI*2);k.fill()}}if(Math.random()<0.3){a.add(new Point((Math.random()-0.5)*settings.particles.velocity,(Math.random()-0.5)*settings.particles.velocity),w.x,w.y)}window.requestAnimationFrame(g)}function d(){b.width=i.width=window.innerWidth;b.height=i.height=window.innerHeight}function c(){b=document.getElementById("pinkboard");i=document.createElement("canvas");k=b.getContext("2d");h=i.getContext("2d");d();g()}setTimeout(function(){c();window.onresize=d},500)})(window);
+    update(time, elapsed, breathScale) {
+      const gatherDuration = 4;
+      const timeSinceStart = (time - startTime) / 1000;
+      let gatherProgress = Math.min(1, timeSinceStart / gatherDuration);
+      gatherProgress = easeInOutCubic(gatherProgress);
+
+      // Blend between heart and infinity
+      const morphCycle = Math.sin(time * 0.0003) * 0.5 + 0.5; // 0 to 1
+      this.tx = this.heartTX * (1 - morphCycle * 0.3) + this.infTX * (morphCycle * 0.3);
+      this.ty = this.heartTY * (1 - morphCycle * 0.3) + this.infTY * (morphCycle * 0.3);
+
+      // Apply breath scale to target
+      const btx = centerX + (this.tx - centerX) * breathScale;
+      const bty = centerY + (this.ty - centerY) * breathScale;
+
+      // Orbit
+      const orbitX = Math.cos(time * 0.002 + this.phase) * this.orbitRadius * (1 - gatherProgress * 0.5);
+      const orbitY = Math.sin(time * 0.002 + this.phase) * this.orbitRadius * (1 - gatherProgress * 0.5);
+
+      const finalTX = btx + orbitX;
+      const finalTY = bty + orbitY;
+
+      if (gatherProgress < 1) {
+        // Gathering phase
+        const attractForce = gatherProgress * 0.08;
+        this.vx += (finalTX - this.x) * attractForce;
+        this.vy += (finalTY - this.y) * attractForce;
+        this.vx *= 0.88;
+        this.vy *= 0.88;
+      } else {
+        // Settled - spring physics
+        const dx = finalTX - this.x;
+        const dy = finalTY - this.y;
+        this.vx += dx * 0.06;
+        this.vy += dy * 0.06;
+        this.vx *= 0.85;
+        this.vy *= 0.85;
+        this.gathered = true;
+      }
+
+      // Mouse/Touch interaction
+      const mdx = this.x - mouseX;
+      const mdy = this.y - mouseY;
+      const mDist = Math.sqrt(mdx * mdx + mdy * mdy);
+      const interactRadius = 120 * scale;
+
+      if (mDist < interactRadius && mouseX > -500) {
+        const force = (1 - mDist / interactRadius) * 8;
+        this.vx += (mdx / mDist) * force;
+        this.vy += (mdy / mDist) * force;
+      }
+
+      this.x += this.vx;
+      this.y += this.vy;
+
+      // Twinkle
+      this.life += 0.02;
+      const twinkle = 0.6 + 0.4 * Math.sin(this.life * 3 + this.phase);
+      this.alpha = twinkle * (0.4 + gatherProgress * 0.6);
+      this.size = this.baseSize * (0.8 + 0.4 * Math.sin(this.life * 2 + this.phase)) * (0.5 + gatherProgress * 0.5);
+
+      // Update color over time
+      const c = getColor(this.i + time * 0.01, PARTICLE_COUNT);
+      this.r = this.r * 0.97 + c.r * 0.03;
+      this.g = this.g * 0.97 + c.g * 0.03;
+      this.b = this.b * 0.97 + c.b * 0.03;
+    }
+  }
+
+  function easeInOutCubic(t) {
+    return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+  }
+
+  // Initialize particles
+  for (let i = 0; i < PARTICLE_COUNT; i++) {
+    particles.push(new Particle(i));
+  }
+
+  // ─── BACKGROUND STARS ───
+  const stars = [];
+  const STAR_COUNT = 200;
+  for (let i = 0; i < STAR_COUNT; i++) {
+    stars.push({
+      x: Math.random() * W,
+      y: Math.random() * H,
+      size: Math.random() * 1.5,
+      twinkleSpeed: 0.5 + Math.random() * 2,
+      phase: Math.random() * Math.PI * 2
+    });
+  }
+
+  // ─── LIGHT RIPPLES ───
+  const ripples = [];
+
+  function createRipple() {
+    ripples.push({
+      x: centerX,
+      y: centerY,
+      radius: 10,
+      maxRadius: 200 * scale,
+      alpha: 0.4,
+      speed: 1 + Math.random() * 2,
+      hue: Math.random() * 60 + 300 // pink-purple range
+    });
+  }
+
+  // ─── SHOOTING STARS ───
+  const shootingStars = [];
+
+  function createShootingStar() {
+    const side = Math.random();
+    let sx, sy, angle;
+    if (side < 0.5) {
+      sx = Math.random() * W;
+      sy = -10;
+      angle = Math.PI / 4 + Math.random() * Math.PI / 4;
+    } else {
+      sx = W + 10;
+      sy = Math.random() * H * 0.5;
+      angle = Math.PI * 0.6 + Math.random() * Math.PI / 4;
+    }
+
+    shootingStars.push({
+      x: sx, y: sy,
+      vx: Math.cos(angle) * (3 + Math.random() * 4),
+      vy: Math.sin(angle) * (3 + Math.random() * 4),
+      life: 1,
+      length: 30 + Math.random() * 50,
+      size: 1 + Math.random() * 1.5
+    });
+  }
+
+  // ─── MAIN RENDER LOOP ───
+  let lastTime = 0;
+  let rippleTimer = 0;
+  let shootTimer = 0;
+
+  function render(time) {
+    requestAnimationFrame(render);
+    if (!animationStarted) return;
+
+    const elapsed = Math.min(time - lastTime, 50);
+    lastTime = time;
+
+    // Clear with deep space gradient
+    const grad = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, Math.max(W, H) * 0.8);
+    grad.addColorStop(0, 'rgba(15, 5, 25, 1)');
+    grad.addColorStop(0.4, 'rgba(8, 2, 18, 1)');
+    grad.addColorStop(1, 'rgba(2, 0, 8, 1)');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, W, H);
+
+    // Stars
+    for (const star of stars) {
+      const twinkle = 0.3 + 0.7 * Math.abs(Math.sin(time * 0.001 * star.twinkleSpeed + star.phase));
+      ctx.beginPath();
+      ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(200, 200, 255, ${twinkle * 0.7})`;
+      ctx.fill();
+    }
+
+    // Shooting stars
+    shootTimer += elapsed;
+    if (shootTimer > 3000 + Math.random() * 5000) {
+      shootTimer = 0;
+      createShootingStar();
+    }
+
+    for (let i = shootingStars.length - 1; i >= 0; i--) {
+      const s = shootingStars[i];
+      s.x += s.vx;
+      s.y += s.vy;
+      s.life -= 0.008;
+
+      if (s.life <= 0 || s.x < -50 || s.x > W + 50 || s.y > H + 50) {
+        shootingStars.splice(i, 1);
+        continue;
+      }
+
+      ctx.beginPath();
+      const tailX = s.x - s.vx * s.length / 5;
+      const tailY = s.y - s.vy * s.length / 5;
+      const g = ctx.createLinearGradient(tailX, tailY, s.x, s.y);
+      g.addColorStop(0, `rgba(255, 200, 255, 0)`);
+      g.addColorStop(1, `rgba(255, 200, 255, ${s.life * 0.8})`);
+      ctx.strokeStyle = g;
+      ctx.lineWidth = s.size;
+      ctx.moveTo(tailX, tailY);
+      ctx.lineTo(s.x, s.y);
+      ctx.stroke();
+    }
+
+    // Heartbeat breath
+    const heartbeatPhase = time * 0.003;
+    const beat1 = Math.pow(Math.sin(heartbeatPhase), 20) * 0.08;
+    const beat2 = Math.pow(Math.sin(heartbeatPhase + 0.4), 20) * 0.05;
+    const breathBase = 0.97 + Math.sin(time * 0.001) * 0.03;
+    const breathScale = breathBase + beat1 + beat2;
+
+    // Ripples
+    rippleTimer += elapsed;
+    if (rippleTimer > 800 + Math.random() * 400) {
+      rippleTimer = 0;
+      createRipple();
+    }
+
+    for (let i = ripples.length - 1; i >= 0; i--) {
+      const r = ripples[i];
+      r.radius += r.speed;
+      r.alpha *= 0.985;
+
+      if (r.alpha < 0.01 || r.radius > r.maxRadius) {
+        ripples.splice(i, 1);
+        continue;
+      }
+
+      ctx.beginPath();
+      ctx.arc(r.x, r.y, r.radius * breathScale, 0, Math.PI * 2);
+      ctx.strokeStyle = `hsla(${r.hue}, 80%, 70%, ${r.alpha})`;
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+    }
+
+    // Center glow (bloom behind particles)
+    const timeSinceStart = (time - startTime) / 1000;
+    const bloomAlpha = Math.min(0.15, timeSinceStart / 10 * 0.15);
+    const bloomGrad = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, 180 * scale * breathScale);
+    bloomGrad.addColorStop(0, `rgba(255, 100, 180, ${bloomAlpha * (1 + beat1 * 5)})`);
+    bloomGrad.addColorStop(0.3, `rgba(180, 50, 200, ${bloomAlpha * 0.5})`);
+    bloomGrad.addColorStop(0.6, `rgba(120, 40, 180, ${bloomAlpha * 0.2})`);
+    bloomGrad.addColorStop(1, 'rgba(80, 20, 120, 0)');
+    ctx.fillStyle = bloomGrad;
+    ctx.fillRect(0, 0, W, H);
+
+    // Update & render particles
+    // Use ImageData for performance with many particles
+    for (const p of particles) {
+      p.update(time, elapsed, breathScale);
+    }
+
+    // Render particles with glow
+    ctx.globalCompositeOperation = 'lighter';
+
+    for (const p of particles) {
+      if (p.x < -50 || p.x > W + 50 || p.y < -50 || p.y > H + 50) continue;
+
+      const size = p.size * (1 + beat1 * 3);
+      const alpha = p.alpha;
+
+      if (alpha < 0.05) continue;
+
+      // Glow
+      const glowSize = size * 4;
+      const grd = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, glowSize);
+      grd.addColorStop(0, `rgba(${Math.floor(p.r)}, ${Math.floor(p.g)}, ${Math.floor(p.b)}, ${alpha * 0.8})`);
+      grd.addColorStop(0.3, `rgba(${Math.floor(p.r)}, ${Math.floor(p.g)}, ${Math.floor(p.b)}, ${alpha * 0.3})`);
+      grd.addColorStop(1, `rgba(${Math.floor(p.r)}, ${Math.floor(p.g)}, ${Math.floor(p.b)}, 0)`);
+
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, glowSize, 0, Math.PI * 2);
+      ctx.fillStyle = grd;
+      ctx.fill();
+
+      // Core
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, size * 0.5, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(${Math.min(255, Math.floor(p.r + 60))}, ${Math.min(255, Math.floor(p.g + 60))}, ${Math.min(255, Math.floor(p.b + 60))}, ${alpha})`;
+      ctx.fill();
+    }
+
+    ctx.globalCompositeOperation = 'source-over';
+
+    // Vignette
+    const vignette = ctx.createRadialGradient(centerX, centerY, Math.min(W, H) * 0.3, centerX, centerY, Math.max(W, H) * 0.8);
+    vignette.addColorStop(0, 'rgba(0,0,0,0)');
+    vignette.addColorStop(1, 'rgba(0,0,0,0.6)');
+    ctx.fillStyle = vignette;
+    ctx.fillRect(0, 0, W, H);
+  }
+
+  // ─── START LOGIC ───
+  const startOverlay = document.getElementById('startOverlay');
+  const startBtn = document.getElementById('startBtn');
+  const readBtn = document.getElementById('readBtn');
+  const messageContainer = document.getElementById('messageContainer');
+  const closeMsgBtn = document.getElementById('closeMsgBtn');
+  const messageLines = document.querySelectorAll('.message-line');
+
+  startBtn.addEventListener('click', () => {
+    startOverlay.classList.add('hidden');
+    animationStarted = true;
+    startTime = performance.now();
+    lastTime = startTime;
+    startMusic();
+
+    // Show read button after heart forms
+    setTimeout(() => {
+      readBtn.classList.add('visible');
+    }, 5000);
+  });
+
+  startBtn.addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    startBtn.click();
+  }, { passive: false });
+
+  // Auto-play music on any interaction (fallback)
+  document.body.addEventListener('click', startMusic, { once: true });
+  document.body.addEventListener('touchstart', startMusic, { once: true });
+
+  // ─── MESSAGE LOGIC ───
+  readBtn.addEventListener('click', () => {
+    messageContainer.classList.add('visible');
+    readBtn.classList.remove('visible');
+
+    // Animate lines in sequence
+    messageLines.forEach((line, i) => {
+      setTimeout(() => {
+        line.classList.add('visible');
+      }, 300 + i * 400);
+    });
+
+    // Show close button after all lines
+    setTimeout(() => {
+      closeMsgBtn.classList.add('visible');
+    }, 300 + messageLines.length * 400 + 1000);
+  });
+
+  closeMsgBtn.addEventListener('click', () => {
+    messageContainer.classList.remove('visible');
+    setTimeout(() => {
+      readBtn.classList.add('visible');
+    }, 500);
+  });
+
+  // ─── KICK OFF ───
+  requestAnimationFrame(render);
+
+  // ─── RESIZE STARS ───
+  window.addEventListener('resize', () => {
+    for (const star of stars) {
+      star.x = Math.random() * W;
+      star.y = Math.random() * H;
+    }
+  });
+
+})();
 </script>
 </body>
 </html>
